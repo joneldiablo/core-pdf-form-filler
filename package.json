@@ -1,0 +1,16 @@
+{
+  "name": "core-pdf-form-filler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "joneldiablo",
+  "license": "ISC",
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^1.1.1",
+    "yargs": "^17.7.2"
+  }
+}
