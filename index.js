@@ -4,9 +4,7 @@
  * and create new PDFs with filled fields using a JSON file.
  */
 
-const fs = require('fs');
 const yargs = require('yargs');
-const { PDFDocument, rgb } = require('pdf-lib');
 
 const extractFields = require('./utils/extract-fields');
 const fillFields = require('./utils/fill-fields');
