@@ -9,6 +9,7 @@
   "author": "joneldiablo",
   "license": "ISC",
   "dependencies": {
+    "csvtojson": "^2.0.10",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
     "yargs": "^17.7.2"

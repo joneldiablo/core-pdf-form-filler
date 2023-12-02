@@ -5,9 +5,10 @@
  */
 
 const yargs = require('yargs');
+const fs = require('fs');
 
 const extractFields = require('./utils/extract-fields');
-const fillFields = require('./utils/fill-fields');
+const { default: fillFields, csvFillFields } = require('./utils/fill-fields');
 
 const args = yargs
   .usage('Usage: $0 <command> [options]')
@@ -19,11 +20,12 @@ const args = yargs
   .command('fill', 'Fill PDF form fields using a JSON file', (yargs) => yargs
     .options({
       dataFile: { alias: 'f', demandOption: false, type: 'string', describe: 'JSON data file' },
+      dataCsvFile: { alias: 's', demandOption: false, type: 'string', describe: 'CSV data file' },
       data: { alias: 'd', demandOption: false, type: 'string', describe: 'JSON data' },
       columnFileName: { alias: 'c', demandOption: false, type: 'string', describe: 'Column to name the new PDF file' },
     })
     .check((argv) => {
-      if (!argv.data && !argv.dataFile) {
+      if (!argv.data && !(argv.dataFile || argv.dataCsvFile)) {
         throw new Error('You must provide either data or dataFile for the fill command.');
       }
       return true;
@@ -46,15 +48,20 @@ async function main(args) {
       return res.data;
     }
     case 'fill': {
-      const { inputFile, dataFile, data, output, columnFileName } = args;
+      const { inputFile, dataFile, dataCsvFile, data, output, columnFileName } = args;
       const conf = {
         inputFile,
-        data: data ? JSON.parse(data) : undefined,
-        dataFile,
         columnFileName,
         output
       };
-      const res = await fillFields(conf);
+
+      if (data) conf.data = JSON.parse(data);
+      else if (dataFile) conf.dataFile = dataFile;
+      else if (dataCsvFile) conf.dataCsvFile = await fs.promises.readFile(dataCsvFile, 'utf-8');
+
+      const res = await (!conf.dataCsvFile
+        ? fillFields(conf)
+        : csvFillFields(conf));
       if (!Array.isArray(res.data)) throw res.data;
       return res.data.reduce((rs, item) => {
         if (!item.success) {

@@ -6,7 +6,7 @@ const { slugify } = require('./strings');
 
 module.exports = async ({ inputFile, output }) => {
   try {
-    const pdfBytes = await fs.promises.readFile(inputFile);
+    const pdfBytes = inputFile instanceof Buffer || await fs.promises.readFile(inputFile);
     const pdfDoc = await PDFDocument.load(pdfBytes);
     // Extract and display field names
     const form = pdfDoc.getForm();

@@ -1,7 +1,9 @@
 const fs = require('fs');
 const { PDFDocument } = require('pdf-lib');
-const { slugify } = require('./strings');
 const path = require('path');
+const csvtojson = require('csvtojson');
+
+const { slugify } = require('./strings');
 
 const checkTypes = (field) => {
   if (field instanceof form.constructor.CheckBoxField) {
@@ -21,9 +23,9 @@ const checkTypes = (field) => {
   }
 }
 
-module.exports = async ({ inputFile, data: dataRaw, dataFile, columnFileName, output }) => {
+const fillFields = async ({ inputFile, data: dataRaw, dataFile, columnFileName, output }) => {
   try {
-    const pdfBytes = await fs.promises.readFile(inputFile);
+    const pdfBytes = inputFile instanceof Buffer || await fs.promises.readFile(inputFile);
     const pdfDoc = await PDFDocument.load(pdfBytes);
 
     // Read data from JSON file
@@ -89,4 +91,30 @@ module.exports = async ({ inputFile, data: dataRaw, dataFile, columnFileName, ou
   } catch (error) {
     return { success: false, error: true, data: error };
   }
+}
+
+const csvFillFields = async (args) => {
+  const {
+    inputFile,
+    dataCsvFile,
+    csvColumns,
+    columnFileName,
+    output
+  } = args;
+  const headers = csvColumns ?
+    (Array.isArray(csvColumns)
+      ? csvColumns
+      : JSON.parse(await fs.promises.readFile(csvColumns, 'utf-8')))
+    : null;
+
+  const data = await csvtojson({ headers, flatKeys: true }).fromString(dataCsvFile);
+
+  return fillFields({
+    inputFile, data, columnFileName, output
+  });
+}
+
+module.exports = {
+  csvFillFields,
+  default: fillFields
 }
