@@ -1,6 +1,4 @@
-const fs = require('fs');
 const { PDFDocument } = require('pdf-lib');
-const path = require('path');
 const csvtojson = require('csvtojson');
 
 const { slugify } = require('./strings');
@@ -23,13 +21,9 @@ const checkTypes = (field) => {
   }
 }
 
-const fillFields = async ({ inputFile, data: dataRaw, dataFile, columnFileName, output }) => {
+const fillFields = async ({ inputFile, data, columnFileName, fileName }) => {
   try {
-    const pdfBytes = inputFile instanceof Buffer || await fs.promises.readFile(inputFile);
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-
-    // Read data from JSON file
-    const data = dataRaw || JSON.parse(await fs.promises.readFile(dataFile, 'utf-8'));
+    const pdfDoc = await PDFDocument.load(inputFile);
 
     // Fill the fields in the PDF
     const form = pdfDoc.getForm();
@@ -72,11 +66,8 @@ const fillFields = async ({ inputFile, data: dataRaw, dataFile, columnFileName, 
         //filename
         let pdfName = `${((i + 1) + '').padStart(3, '0')}`;
         if (columnFileName) pdfName += `-${slugify(row[columnFileName])}`;
-        pdfName += '-' + inputFile.split('/').pop();
-        if (output) {
-          const out = path.join(output, pdfName);
-          await fs.promises.writeFile(out, filledPdfBytes);
-        }
+        pdfName += '-' + fileName.split('/').pop();
+
         return { success: true, error: false, data: [pdfName, filledPdfBytes] };
       } catch (error) {
         return { success: false, error: true, data: error };
@@ -96,21 +87,17 @@ const fillFields = async ({ inputFile, data: dataRaw, dataFile, columnFileName, 
 const csvFillFields = async (args) => {
   const {
     inputFile,
-    dataCsvFile,
+    dataCsv,
     csvColumns,
     columnFileName,
-    output
+    fileName
   } = args;
-  const headers = csvColumns ?
-    (Array.isArray(csvColumns)
-      ? csvColumns
-      : JSON.parse(await fs.promises.readFile(csvColumns, 'utf-8')))
-    : null;
+  const headers = csvColumns;
 
-  const data = await csvtojson({ headers, flatKeys: true }).fromString(dataCsvFile);
+  const data = await csvtojson({ headers, flatKeys: true }).fromString(dataCsv);
 
   return fillFields({
-    inputFile, data, columnFileName, output
+    inputFile, data, columnFileName, fileName
   });
 }
 

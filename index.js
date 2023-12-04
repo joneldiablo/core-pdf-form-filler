@@ -6,9 +6,11 @@
 
 const yargs = require('yargs');
 const fs = require('fs');
+const path = require('path');
 
-const extractFields = require('./utils/extract-fields');
-const { default: fillFields, csvFillFields } = require('./utils/fill-fields');
+const extractFields = require('./src/extract-fields');
+const { default: fillFields, csvFillFields } = require('./src/fill-fields');
+const { slugify } = require('./src/strings');
 
 const args = yargs
   .usage('Usage: $0 <command> [options]')
@@ -39,35 +41,56 @@ const args = yargs
  * @param {object} args - Command line arguments.
  */
 async function main(args) {
+  const inputFile = await fs.promises.readFile(args.inputFile);
+  const output = args.output;
   switch (args._[0]) {
     case 'extract': {
-      const { inputFile, output } = args;
-      const conf = { inputFile, output };
+      const conf = { inputFile };
       const res = await extractFields(conf);
       if (!res.success) throw res.data;
+      if (output) {
+        const name = [
+          'fields',
+          slugify(args.inputFile.split('/').pop().replace('.pdf', ''))
+        ].join('-');
+        const out = path.join(output, name + '.json');
+        await fs.promises.writeFile(out, JSON.stringify(res.data, null, 2));
+      }
       return res.data;
     }
     case 'fill': {
-      const { inputFile, dataFile, dataCsvFile, data, output, columnFileName } = args;
+      const { dataFile, dataCsvFile, data, columnFileName } = args;
       const conf = {
         inputFile,
+        fileName: args.inputFile,
         columnFileName,
         output
       };
 
       if (data) conf.data = JSON.parse(data);
-      else if (dataFile) conf.dataFile = dataFile;
-      else if (dataCsvFile) conf.dataCsvFile = await fs.promises.readFile(dataCsvFile, 'utf-8');
+      else if (dataFile) conf.data = JSON.parse(await fs.promises.readFile(dataFile, 'utf-8'));
+      else if (dataCsvFile) conf.dataCsv = await fs.promises.readFile(dataCsvFile, 'utf-8');
 
-      const res = await (!conf.dataCsvFile
+      const res = await (!conf.dataCsv
         ? fillFields(conf)
         : csvFillFields(conf));
       if (!Array.isArray(res.data)) throw res.data;
-      return res.data.reduce((rs, item) => {
+      return res.data.reduce(async (rsp, item) => {
+        const rs = await rsp;
         if (!item.success) {
           rs.error++;
           console.error(item.data);
         } else {
+          if (output) {
+            const out = path.join(output, item.data[0]);
+            try {
+              await fs.promises.writeFile(out, item.data[1]);
+            } catch (error) {
+              rs.error++;
+              console.error(error);
+              return rs;
+            }
+          }
           rs.success++;
           rs.filesSuccess.push(item.data[0]);
         }
