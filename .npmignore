@@ -1,4 +1,3 @@
 node_modules
 tmp
-bin
-lib
+src

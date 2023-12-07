@@ -1,9 +1,18 @@
 {
-  "name": "core-pdf-form-filler",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@pdf-form-filler/core",
+  "version": "0.1.0",
+  "description": "pdf form tools, fill fields, get name fields, use csv files to fill",
+  "main": "lib",
+  "bin": {
+    "pdform": "index.js"
+  },
+  "repository": {
+    "url": "git@github.com:joneldiablo/core-pdf-form-filler.git"
+  },
   "scripts": {
+    "pkg": " pkg .",
+    "babel": "babel ./src --out-dir ./lib",
+    "build": "yarn pkg && yarn babel",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "joneldiablo",
@@ -13,5 +22,23 @@
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
     "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.23.4",
+    "@babel/core": "^7.23.5",
+    "@babel/preset-env": "^7.23.5",
+    "pkg": "^5.8.1"
+  },
+  "pkg": {
+    "name": "pdform",
+    "scripts": "index.js",
+    "targets": [
+      "node16-linux-arm64",
+      "node16-linux-x64",
+      "node16-win-x64",
+      "node16-macos-x64"
+    ],
+    "outputPath": "bin",
+    "compress": "GZip"
   }
 }
