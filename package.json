@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "description": "pdf form tools, fill fields, get name fields, use csv files to fill",
   "main": "lib",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "pdform": "index.js"
   },
   "repository": {
-    "url": "git@github.com:joneldiablo/core-pdf-form-filler.git"
+    "url": "git+ssh://git@github.com/joneldiablo/core-pdf-form-filler.git"
   },
   "scripts": {
     "pkg": " pkg .",
