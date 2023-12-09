@@ -1,13 +1,13 @@
 {
   "name": "@pdf-form-filler/core",
-  "version": "0.1.0",
+  "version": "0.1.01",
   "description": "pdf form tools, fill fields, get name fields, use csv files to fill",
   "main": "lib",
-  "publishConfig": {
-    "access": "public"
-  },
   "bin": {
     "pdform": "index.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "repository": {
     "url": "git+ssh://git@github.com/joneldiablo/core-pdf-form-filler.git"
@@ -15,8 +15,9 @@
   "scripts": {
     "pkg": " pkg .",
     "babel": "babel ./src --out-dir ./lib",
-    "build": "yarn pkg && yarn babel",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "yarn babel && yarn pkg",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "publish": "yarn build && npm publish"
   },
   "author": "joneldiablo",
   "license": "ISC",
